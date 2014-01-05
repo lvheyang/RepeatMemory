@@ -56,6 +56,7 @@ class Word(models.Model):
 class WordTest(models.Model):
 
     owner = models.ForeignKey(User)
+    repository = models.ForeignKey(WordRepository)
     group = models.ForeignKey(WordGroup)
     wordNum = models.IntegerField()
     answerNum = models.IntegerField(default=0)
