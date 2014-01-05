@@ -103,8 +103,13 @@ def viewRepository(request, rid):
     content['repo']['wordAmount'] = repo.wordAmount
     content['repo']['runningTestNum'] = repo.runningTestNum
     content['repo']['completeTestNum'] = repo.completeTestNum
+    content['repo']['cancelTestNum'] = repo.cancelTestNum
     content['repo']['srcLang'] = {"id": src_lang.id, "name": src_lang.name}
     content['repo']['tarLang'] = {"id": tar_lang.id, "name": tar_lang.name}
+
+    last_running_test = WordTest.objects.filter(repository=repo, status=WordTest.RUNNING)
+    if len(last_running_test) > 0:
+        content['last_running_test_id'] = last_running_test.order_by("-id").first().id
 
     groups = WordGroup.objects.filter(repository=repo)
     for g in groups:
@@ -290,7 +295,7 @@ def createTest(request, rid):
             words = Word.objects.filter(group=group)
             test = WordTest(owner=user, group=group,
                             wordNum=len(words), direction=direction,
-                            status=WordTest.RUNNING)
+                            status=WordTest.RUNNING, repository=repo)
             test.save()
             group.runningTestNum += 1
             group.save()
