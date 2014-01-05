@@ -12,13 +12,16 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+HOST = "http://localhost:8000"
+
+LOGIN_URL = HOST + "/accounts/login"
+LOGOUT_URL = HOST + "/accounts/logout"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Edit it to a unpredictable long string 
-SECRET_KEY = ''
+SECRET_KEY = ')miqc*li)o)-$mj&a2+1u+mj0f&e&y9ko)o$*)cfjg2pcgai)o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -60,11 +63,11 @@ WSGI_APPLICATION = 'RepeatMemory.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'databasename',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'host',
-        'PORT': '8800',
+        'NAME': 'RepeatMemory',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
         'OPTIONS': {
             'init_command': 'SET storage_engine=INNODB,character_set_connection=utf8,collation_connection=utf8_unicode_ci'
         },
@@ -90,6 +93,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-TEMPLATE_DIRS = (
-    BASE_DIR + "/templates",
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
 )
+
+
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, "templates"),
+)
+
+ERROR_TEMPLATE = "error.html"

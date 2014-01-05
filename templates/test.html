@@ -1,0 +1,171 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="row-fluid">
+    <div class="box span6">
+        <div class="box-header well">
+            <h2><i class="icon-info-sign"></i> 测试：{{ repo.name }} 第{{ repo.group }}组</h2>
+            <div class="box-icon">
+                <a class="btn btn-setting btn-round" href="#"><i class="icon-cog"></i></a>
+                <a class="btn btn-minimize btn-round" href="#"><i class="icon-chevron-up"></i></a>
+                <a class="btn btn-close btn-round" href="#"><i class="icon-remove"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <form class="form-horizontal" action="{% url "submitAnswer" test.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <fieldset>
+                    <div class="control-group">
+                        <label for="question" class="control-label">{{ test.srcLang }}</label>
+                        <div class="controls">
+                            <input type="text" class=" focused" name="question" id="question" readonly="true" value="{{ question }}">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="answer" class="control-label">{{ test.tarLang }}</label>
+                        <div class="controls">
+                            <input type="text" class=" focused" name="answer" id="answer" value="">
+                            <span id="answerSign" class="" title="回答正确" ></span>
+                        </div>
+                    </div>
+                    <div class="control-group" >
+                        <label for="tips" class="control-label">提示：</label>
+                        <div class="controls">
+                            <input type="text" class=" focused" name="tips" id="tips" readonly="true" value="亲，先仔细想想~">
+                        </div>
+                    </div>
+                </fieldset>
+
+            </form>
+            <p class="center">
+                <button class="btn btn-large btn-success" id="submitAnswer" >提交答案</button>
+                <a class="btn btn-large btn-info" id="toNext" href="{% url "runTest" test.id %}">下一个</a>
+                <button class="btn btn-large btn-danger" id="showTips" >提示一下</button>
+            </p>
+        </div>
+    </div>
+    <div class="box span6">
+        <div class="box-header well">
+            <h2><i class="icon-info-sign"></i> 测试统计</h2>
+            <div class="box-icon">
+                <a class="btn btn-setting btn-round" href="#"><i class="icon-cog"></i></a>
+                <a class="btn btn-minimize btn-round" href="#"><i class="icon-chevron-up"></i></a>
+                <a class="btn btn-close btn-round" href="#"><i class="icon-remove"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>数量</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>总词数</td>
+                        <td>
+                            <span class="label label-info">{{ test.wordNum }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>回答次数</td>
+                        <td class="center">
+                            <span class="label label-info">{{ test.answerNum }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>答对次数</td>
+                        <td class="center">
+                            <span class="label label-success">{{ test.correctNum }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>答错次数</td>
+                        <td class="center">
+                            <span class="label label-important">{{ test.errorNum }}</span>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block dialogs %}
+<div class="modal hide fade" id="answerErrorDialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>啊哦……回答错误</h3>
+    </div>
+    <div class="modal-body">
+        <p>回答错啦，正确答案是：<strong id="rightAnswer"></strong></p>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">关闭</a>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block include-js %}
+    <script>
+        var TIPS = "{{ tips }}";
+        var TESTID = '{{ test.id }}';
+        var TEST_HISTORY_ID = "{{ test_history_id }}";
+        var RIGHT_SIGN_CLS = "icon32 icon-color icon-check";
+        var ERROR_SIGN_CLS = "icon32 icon-color icon-close";
+        var ANSWER = "";
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $(document).ready(function(){
+            $("#showTips").click(function(){
+                $("#tips").val(TIPS);
+            });
+            $("#submitAnswer").click(function(){
+                var csrftoken = getCookie('csrftoken');
+                $.post("{% url "submitAnswer" test.id %}",
+                        {
+                            "testRecordId": TEST_HISTORY_ID,
+                            "answer" : $("#answer").val(),
+                            "csrfmiddlewaretoken" : csrftoken
+                        },
+                        function(data){
+                            answer = data.answer
+                            if(!data.submitSuccess){
+                                alert("提交答案失败！")
+                            }
+                            if(data.answerRight){
+                                $("#answerSign").removeClass(ERROR_SIGN_CLS).addClass(RIGHT_SIGN_CLS);
+                            } else {
+                                $("#rightAnswer").text(answer);
+                                $("#answerErrorDialog").modal("show");
+                                $("#answerSign").removeClass(RIGHT_SIGN_CLS).addClass(ERROR_SIGN_CLS);
+                            }
+                        }, "json");
+                $("#submitAnswer").hide();
+            });
+        });
+    </script>
+{% endblock %}

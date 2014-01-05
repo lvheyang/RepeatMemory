@@ -1,0 +1,190 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="row-fluid">
+    <div class="box span6">
+        <div class="box-header well">
+            <h2><i class="icon-info-sign"></i> 词库：{{ repo.name }}基本信息</h2>
+            <div class="box-icon">
+                <a class="btn btn-setting btn-round" href="#"><i class="icon-cog"></i></a>
+                <a class="btn btn-minimize btn-round" href="#"><i class="icon-chevron-up"></i></a>
+                <a class="btn btn-close btn-round" href="#"><i class="icon-remove"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <form class="form-horizontal" action="/beidanci/repo/edit/{{ repo.id }}/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <fieldset>
+                    <div class="control-group">
+                        <label for="srclang" class="control-label" >第一语言</label>
+                        <div class="controls">
+                            <select data-rel="chosen" id="srclang" name="srclang" disabled="true" style="width: 200px">
+                                {% for lang in languages %}
+                                    <option value="{{ lang.id }}" {% if lang.isSrc %} selected="selected" {% endif %}>{{ lang.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="tarlang" class="control-label">第二语言</label>
+                        <div class="controls" >
+                            <select data-rel="chosen" id="tarlang" name="tarlang" disabled="true" style="width: 200px">
+                                {% for lang in languages %}
+                                    <option value="{{ lang.id }}" {% if lang.isTar %} selected="selected" {% endif %}>{{ lang.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% if editable %}
+                        <div class="control-group" hidden="true" id="appendWordsDiv">
+                            <label for="repoFile" class="control-label">续传词库文件</label>
+                            <div class="controls">
+                                <input type="file" id="repoFile" name="repoFile" class="input-file uniform_on" >
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="control-group">
+                        <label for="info" class="control-label">词库的简介</label>
+                        <div class="controls">
+                            <textarea class="autogrow" id="info" name="info" readonly="true" placeholder="描述下这个词库的用途吧~" >{{ repo.info }}</textarea>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="wordAmount" class="control-label">总词汇数</label>
+                        <div class="controls">
+                            <input type="text" class=" focused" name="wordAmount" id="wordAmount" readonly="true" value="{{ repo.wordAmount }}">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="createTime" class="control-label">创建时间</label>
+                        <div class="controls">
+                            <input type="text" class=" focused" name="createTime" id="createTime" readonly="true" value="{{ repo.createTime }}">
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <div class="box span6">
+        <div class="box-header well">
+            <h2><i class="icon-info-sign"></i> 该词库以往测试信息</h2>
+            <div class="box-icon">
+                <a class="btn btn-setting btn-round" href="#"><i class="icon-cog"></i></a>
+                <a class="btn btn-minimize btn-round" href="#"><i class="icon-chevron-up"></i></a>
+                <a class="btn btn-close btn-round" href="#"><i class="icon-remove"></i></a>
+            </div>
+        </div>
+        <div class="box-content">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>测试状态</th>
+                        <th>数量</th>
+                        <th>动作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>未完成测试</td>
+                        <td class="center">{{ repo.runningTestNum }}</td>
+                        <td class="center">
+                            <a href="#" class="btn btn-success">
+                                <i class="icon-zoom-in icon-white"></i>
+                                查看
+                            </a>
+                            <a href="#" class="btn btn-danger">
+                                <i class="icon-repeat icon-white "></i>
+                                继续
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>已完成测试</td>
+                        <td class="center">{{ repo.completeTestNum }}</td>
+                        <td class="center">
+                            <a href="#" class="btn btn-success">
+                                <i class="icon-zoom-in icon-white"></i>
+                                查看
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>已取消测试</td>
+                        <td class="center">{{ repo.completeTestNum }}</td>
+                        <td class="center">
+                            <a href="#" class="btn btn-success">
+                                <i class="icon-zoom-in icon-white"></i>
+                                查看
+                            </a>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row-fluid">
+
+    <button class="btn btn-large btn-success" id="createTest" >新测试</button>
+    {% if editable %}
+    {#<a class="btn btn-large btn-info" id="editRepo">编辑词库</a>#}
+{#    <button class="btn btn-large btn-danger" id="deleteRepo" >删除词库</button>#}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+{% block dialogs %}
+<form class="form-horizontal" action="{% url "newTest" repo.id %}/" method="post" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="modal hide fade" id="newTestDialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>新测试选项</h3>
+    </div>
+    <div class="modal-body">
+        <fieldset>
+            <div class="control-group">
+				<label for="translateDirection" class="control-label">翻译语言</label>
+				<div class="controls">
+				    <select data-rel="chosen" id="translateDirection" name="translateDirection" style="width: 200px">
+                        <option value="{{ directions.positive }}" >正向（{{ repo.srcLang.name }} - {{ repo.tarLang.name }}）</option>
+                        <option value="{{ directions.negative }}" >逆向（{{ repo.tarLang.name }} - {{ repo.srcLang.name }}）</option>
+				    </select>
+				</div>
+			</div>
+            <div class="control-group">
+				<label for="group" class="control-label">选择分组</label>
+				<div class="controls">
+				    <select data-rel="chosen" id="group" name="group" style="width: 200px">
+                        {% for group in groups %}
+                            <option value="{{ group.id }}" >{{ group.name }}</option>
+                        {% endfor %}
+				    </select>
+				</div>
+			</div>
+
+        </fieldset>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">取消</a>
+        <button class="btn btn-primary" type="submit">创建</button>
+    </div>
+</div>
+</form>
+{% endblock %}
+
+
+{% block include-js %}
+    <script>
+        $(document).ready(function(){
+            $("#createTest").click(function(){
+                $("#newTestDialog").modal("show");
+            });
+        });
+    </script>
+{% endblock %}

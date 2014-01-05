@@ -1,10 +1,112 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-</head>
-<body>
-<h1>{{ title }}</h1>
+{% extends "layout.html" %}
 
-</body>
-</html>
+{% block content %}
+<div id="repositories">
+    <div class="sortable row-fluid ui-sortable">
+        {% for repo in repos %}
+            {% if repo.notification %}
+                <a href="{% url "viewRepo"  repo.id %}" class="well span3 top-block repo" data-rel="tooltip" data-original-title="{{ repo.notification }} 个未完成测试">
+            {% else %}
+                <a href="{% url "viewRepo"  repo.id %}" class="well span3 top-block repo" data-rel="tooltip" data-original-title="点击查看">
+            {% endif %}
+
+                <span class="icon32 icon-color icon-book"></span>
+                <div>{{ repo.name }}</div>
+                <div>总词数：{{ repo.num }}</div>
+                {% if repo.notification %}
+                    <span class="notification red">{{ repo.notification }}</span>
+                {% endif %}
+            </a>
+        {% endfor %}
+	</div>
+
+</div>
+
+<button id="createRepo" class="btn btn-large btn-primary">创建新的词库</button>
+
+
+{% endblock %}
+
+
+{% block dialogs %}
+<form class="form-horizontal" action="/beidanci/repo/create/" method="post" enctype="multipart/form-data">
+{% csrf_token %}
+<div class="modal hide fade" id="createDialog">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>设置词库的属性</h3>
+    </div>
+    <div class="modal-body">
+        <fieldset>
+            <div class="control-group">
+				<label for="repoName" class="control-label">词库名</label>
+				<div class="controls">
+				    <input type="text" placeholder="输入词库的名字" id="repoName" name="repoName" class="input-xlarge focused">
+				</div>
+			</div>
+            <div class="control-group">
+				<label for="srclang" class="control-label">第一语言</label>
+				<div class="controls">
+				    <select data-rel="chosen" id="srclang" name="srclang" style="width: 100px">
+                        {% for lang in languages %}
+				    	    <option value="{{ lang.id }}" >{{ lang.name }}</option>
+                        {% endfor %}
+				    </select>
+				</div>
+			</div>
+            <div class="control-group">
+				<label for="tarlang" class="control-label">第二语言</label>
+				<div class="controls" >
+				    <select data-rel="chosen" id="tarlang" name="tarlang" style="width: 100px">
+				    	{% for lang in languages %}
+				    	    <option value="{{ lang.id }}">{{ lang.name }}</option>
+                        {% endfor %}
+				    </select>
+				</div>
+			</div>
+            <div class="control-group">
+                <label for="repoFile" class="control-label">词库文件</label>
+                <div class="controls">
+                    <input type="file" id="repoFile" name="repoFile" class="input-file uniform_on" >
+                </div>
+			</div>
+            <div class="control-group">
+			    <label for="info" class="control-label">词库的简介</label>
+			    <div class="controls">
+                    <textarea class="autogrow" id="info" name="info" placeholder="描述下这个词库的用途吧~" ></textarea>
+			    </div>
+			</div>
+
+        </fieldset>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">取消</a>
+        <button class="btn btn-primary" type="submit">创建</button>
+    </div>
+</div>
+</form>
+
+{% endblock %}
+
+
+{% block include-js %}
+
+<script>
+    var REPO_PER_ROW = 4;
+    $(document).ready(function(){
+        $("#createRepo").click(function(){
+            $("#createDialog").modal("show");
+        });
+        var repolist = $(".repo");
+        var ROWS = 0;
+        for (var i = 0 ; i < repolist.length; i++) {
+            if( i%REPO_PER_ROW == 0 ) {
+                ROWS += 1;
+                $('#repositories').append('<div class="sortable row-fluid ui-sortable" id="repolist'+ROWS+'" ></div>');
+            }
+            $('#repolist'+ROWS).append(repolist[i]);
+        }
+    });
+
+</script>
+{% endblock %}

@@ -8,3 +8,5 @@ admin.site.register(WordRepository)
 admin.site.register(WordGroup)
 admin.site.register(Word)
 admin.site.register(WordTest)
+admin.site.register(TestHistory)
+

@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
-
 
 class Languages(models.Model):
 
@@ -20,6 +18,11 @@ class WordRepository(models.Model):
     info = models.TextField()
     srcLang = models.ForeignKey(Languages, related_name="src_language")
     tarLang = models.ForeignKey(Languages, related_name="target_language")
+    wordAmount = models.BigIntegerField(default=0)
+
+    runningTestNum = models.IntegerField(default=0)
+    completeTestNum = models.IntegerField(default=0)
+    cancelTestNum = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.name
@@ -29,6 +32,11 @@ class WordGroup(models.Model):
 
     repository = models.ForeignKey(WordRepository)
     name = models.CharField(max_length=50)
+    wordAmount = models.BigIntegerField(default=0)
+
+    runningTestNum = models.IntegerField(default=0)
+    completeTestNum = models.IntegerField(default=0)
+    cancelTestNum = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.name
@@ -47,11 +55,53 @@ class Word(models.Model):
 
 class WordTest(models.Model):
 
-    repository = models.ForeignKey(WordRepository)
+    owner = models.ForeignKey(User)
     group = models.ForeignKey(WordGroup)
-    completeNum = models.IntegerField(default=0)
-    sumNum = models.IntegerField(default=0)
+    wordNum = models.IntegerField()
+    answerNum = models.IntegerField(default=0)
     correctNum = models.IntegerField(default=0)
     errorNum = models.IntegerField(default=0)
     time = models.DateTimeField(auto_now_add=True)
 
+    POSITIVE = 0
+    NEGATIVE = 1
+
+    TEST_DIRECTIONS = (
+        (POSITIVE, "src to tar"),
+        (NEGATIVE, "tar to src")
+    )
+
+    direction = models.IntegerField(choices=TEST_DIRECTIONS)
+
+    RUNNING = 0
+    COMPLETE = 1
+    CANCEL = 2
+    TEST_STATUS = (
+        (RUNNING, 'running'),
+        (COMPLETE, 'complete'),
+        (CANCEL, 'cancel'),
+    )
+    status = models.IntegerField(choices=TEST_STATUS)
+
+    def __unicode__(self):
+        return self.group.repository.name + ":" + self.group.name
+
+
+class TestHistory(models.Model):
+
+    test = models.ForeignKey(WordTest)
+    word = models.ForeignKey(Word)
+    answerTimes = models.IntegerField(default=0)
+
+    RIGHT = 0
+    WRONG = 1
+    WAITING = 2
+    WORD_STATUS = (
+        (RIGHT, 'right'),
+        (WRONG, 'wrong'),
+        (WAITING, 'not answer'),
+    )
+    status = models.IntegerField(choices=WORD_STATUS)
+
+    def __unicode__(self):
+        return self.test.__unicode__() + ":" + self.word.srcWord 
