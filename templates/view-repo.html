@@ -93,10 +93,12 @@
                                 <i class="icon-zoom-in icon-white"></i>
                                 查看
                             </a>
-                            <a href="#" class="btn btn-danger">
+                            {% if last_running_test_id %}
+                            <a href="{% url "runTest" last_running_test_id %}" class="btn btn-danger">
                                 <i class="icon-repeat icon-white "></i>
                                 继续
                             </a>
+                            {% endif %}
                         </td>
                     </tr>
                     <tr>
@@ -111,7 +113,7 @@
                     </tr>
                     <tr>
                         <td>已取消测试</td>
-                        <td class="center">{{ repo.completeTestNum }}</td>
+                        <td class="center">{{ repo.cancelTestNum }}</td>
                         <td class="center">
                             <a href="#" class="btn btn-success">
                                 <i class="icon-zoom-in icon-white"></i>
@@ -119,7 +121,6 @@
                             </a>
                         </td>
                     </tr>
-
                 </tbody>
             </table>
         </div>
@@ -128,7 +129,7 @@
 
 <div class="row-fluid">
 
-    <button class="btn btn-large btn-success" id="createTest" >新测试</button>
+    <button class="btn btn-large btn-success" id="createTest" >创建新测试</button>
     {% if editable %}
     {#<a class="btn btn-large btn-info" id="editRepo">编辑词库</a>#}
 {#    <button class="btn btn-large btn-danger" id="deleteRepo" >删除词库</button>#}
