@@ -6,7 +6,8 @@ from django.views.generic import RedirectView
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # admin
+
+    #admin
     url(r'^admin/', include(admin.site.urls)),
 
     # redirect to WordTest app
